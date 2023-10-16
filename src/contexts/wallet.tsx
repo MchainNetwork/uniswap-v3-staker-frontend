@@ -23,6 +23,7 @@ const WalletContext = createContext<{
   disconnect: () => void;
 
   connectMetamask: () => void;
+  changeNetwork: (chainId: string, networkDetails: any) => void;
 } | null>(null);
 
 export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
@@ -69,6 +70,29 @@ export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
     await setProvider(window.ethereum);
   }, [setProvider]);
 
+  const changeNetwork = useCallback(async (chainId, networkDetails) => {
+    try {
+      if (!window.ethereum) return;
+      await window.ethereum.request({
+        method: 'wallet_switchEthereumChain',
+        params: [{ chainId }],
+      });
+    } catch (switchError: Error | any) {
+      console.error(switchError);
+      if (switchError.code === 4902) {
+        try {
+          if (!window.ethereum) return;
+          await window.ethereum.request({
+            method: 'wallet_addEthereumChain',
+            params: [networkDetails],
+          });
+        } catch (addError) {
+          console.error(addError);
+        }
+      }
+    }
+  }, []);
+
   async function disconnect() {
     cache(CACHE_WALLET_KEY, null);
     setSigner(null);
@@ -106,6 +130,7 @@ export const WalletProvider: FC<{ children: ReactNode }> = ({ children }) => {
         disconnect,
 
         connectMetamask,
+        changeNetwork,
       }}
     >
       {children}
@@ -130,6 +155,7 @@ export function useWallet() {
     disconnect,
 
     connectMetamask,
+    changeNetwork,
   } = context;
 
   return {
@@ -144,5 +170,6 @@ export function useWallet() {
     disconnect,
 
     connectMetamask,
+    changeNetwork,
   };
 }

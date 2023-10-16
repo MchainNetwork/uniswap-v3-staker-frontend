@@ -22,6 +22,7 @@ declare global {
       ethereum: ethers.providers.Provider | undefined;
       networkVersion: any;
       isMetaMask: boolean;
+      request: (arg: { method: string; params: any[] }) => Promise<any>;
       enable: () => void;
     };
   }
