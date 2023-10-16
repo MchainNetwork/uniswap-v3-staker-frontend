@@ -14,6 +14,9 @@ import { APP_NAME } from 'config';
 import { ethers } from 'ethers';
 import { useState } from 'react';
 
+import { useMediaQuery, useTheme } from '@material-ui/core';
+import SwitchNetwork from './SwitchNetwork';
+
 const useStyles = makeStyles((theme) => ({
   container: {
     boxShadow: '3px 3px 5px 0px rgba(0,0,0,0.15)',
@@ -32,19 +35,17 @@ const useStyles = makeStyles((theme) => ({
 }));
 
 const Header: FC = () => {
+  const theme = useTheme();
   const classes = useStyles();
-  const {
-    address,
-    network,
-    startConnecting,
-    disconnect,
-    changeNetwork,
-  } = useWallet();
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+  const { address, startConnecting, disconnect } = useWallet();
 
-  // Inside your Header component
-  const [anchorEl, setAnchorEl] = useState(null);
+  const shortAddress =
+    address && `${address.slice(0, 6)}....${address.slice(-4)}`;
 
-  const handleClick = (event: any) => {
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+
+  const handleClick = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
   };
 
@@ -52,104 +53,13 @@ const Header: FC = () => {
     setAnchorEl(null);
   };
 
-  const shortAddress =
-    address && `${address.slice(0, 6)}....${address.slice(-4)}`;
-
   return (
     <AppBar position='fixed' color='inherit' className={classes.container}>
       <Toolbar color='inherit'>
         <Typography variant='h6' className={'flex flex-grow'}>
           <div className={'flex items-center'}>{APP_NAME}</div>
         </Typography>
-
-        {address ? (
-          <>
-            <Jazzicon diameter={32} seed={jsNumberForAddress(address)} />
-            <div className={classes.account}>{shortAddress}</div>
-            &nbsp;
-            {/* Menu to choose network and show actual one */}
-            <Button
-              variant='outlined'
-              color='secondary'
-              style={{
-                marginRight: 10,
-                marginLeft: 10,
-              }}
-              onClick={handleClick}
-            >
-              {network == 'goerli' && (
-                <>
-                  <img src='goerli_logo.jpeg' width='20' />
-                  &nbsp; &nbsp;
-                  <small> Goerli Testnet</small>
-                </>
-              )}
-              {network == 'mainnet' && (
-                <>
-                  <img src='eth_logo.png' width='20' />
-                  &nbsp; &nbsp;
-                  <small> Ethereum Mainnet</small>
-                </>
-              )}
-            </Button>
-            <Menu
-              id='simple-menu'
-              anchorEl={anchorEl}
-              keepMounted
-              open={Boolean(anchorEl)}
-              onClose={handleClose}
-              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
-              transformOrigin={{ vertical: 'top', horizontal: 'center' }}
-            >
-              <MenuItem
-                onClick={() => {
-                  changeNetwork('0x1', {
-                    chainId: '0x1',
-                    chainName: 'Ethereum Mainnet',
-                    nativeCurrency: {
-                      name: 'ETH',
-                      symbol: 'ETH',
-                      decimals: 18,
-                    },
-                    rpcUrls: [
-                      'https://mainnet.infura.io/v3/YOUR_INFURA_PROJECT_ID',
-                    ],
-                  });
-                  handleClose();
-                }}
-              >
-                <img src='eth_logo.png' width='20' />
-                &nbsp; &nbsp; Ethereum Mainnet
-              </MenuItem>
-              <MenuItem
-                onClick={() => {
-                  changeNetwork('0x5', {
-                    chainId: '0x5',
-                    chainName: 'Goerli Testnet',
-                    nativeCurrency: {
-                      name: 'ETH',
-                      symbol: 'ETH',
-                      decimals: 18,
-                    },
-                    rpcUrls: [
-                      'https://goerli.infura.io/v3/YOUR_INFURA_PROJECT_ID',
-                    ],
-                  });
-                  handleClose();
-                }}
-              >
-                <img src='goerli_logo.jpeg' width='20' />
-                &nbsp; &nbsp; Goerli Testnet
-              </MenuItem>
-              {/* Add more MenuItem components for other networks here */}
-            </Menu>
-            {/* End menu */}
-            <Button variant='outlined' color='primary' onClick={disconnect}>
-              <small>Disconnect</small>
-            </Button>
-            &nbsp;
-          </>
-        ) : (
+        {!address && (
           <Button
             variant='outlined'
             color='secondary'
@@ -157,6 +67,46 @@ const Header: FC = () => {
           >
             Connect Wallet
           </Button>
+        )}
+        {address && isMobile && (
+          <>
+            <div onClick={handleClick}>
+              <Jazzicon diameter={32} seed={jsNumberForAddress(address)} />
+            </div>
+            <Menu
+              id='simple-menu'
+              anchorEl={anchorEl}
+              keepMounted
+              open={Boolean(anchorEl)}
+              onClose={handleClose}
+            >
+              <MenuItem onClick={handleClose}>
+                <SwitchNetwork />
+              </MenuItem>
+              <MenuItem
+                onClick={() => {
+                  disconnect();
+                  handleClose();
+                }}
+              >
+                <Button variant='text' color='primary'>
+                  Disconnect
+                </Button>
+              </MenuItem>
+            </Menu>
+          </>
+        )}
+        {address && !isMobile && (
+          <>
+            <Jazzicon diameter={32} seed={jsNumberForAddress(address)} />
+            <div className={classes.account}>{shortAddress}</div>
+            &nbsp;
+            <SwitchNetwork />
+            <Button variant='outlined' color='primary' onClick={disconnect}>
+              <small>Disconnect</small>
+            </Button>
+            &nbsp;
+          </>
         )}
       </Toolbar>
     </AppBar>
