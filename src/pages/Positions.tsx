@@ -41,8 +41,12 @@ export const useStyles = makeStyles((theme) => ({
     marginRight: 2,
   },
   positionCard: {
+    borderRadius: 10,
     marginTop: 20,
-    backgroundColor: theme.palette.background.default,
+    //backgroundColor: theme.palette.background.default,
+    borderColor: theme.palette.secondary.main,
+    borderWidth: 1,
+    borderStyle: 'solid',
   },
 }));
 
@@ -222,12 +226,20 @@ const LiquidityPositionTableRow: FC<{
     <Card className={classes.positionCard}>
       <CardContent>
         <Box display='flex' flexDirection='column'>
-          <Box>
+          <Box display='flex' justifyContent='space-between'>
             <Box>ID: {position.tokenId.toString()}</Box>
             <Box>
               {!position.reward.isZero() ? (
                 <Box>
-                  <Box mr={1}>
+                  <Box
+                    mr={1}
+                    display='flex'
+                    alignItems='center'
+                    style={{
+                      marginRight: 0,
+                      textAlign: 'right',
+                    }}
+                  >
                     Rewards: {formatUnits(position.reward, token0Decimals)}
                     <Tooltip
                       title='Unstake position in order to claim accrued rewards.'
@@ -235,6 +247,7 @@ const LiquidityPositionTableRow: FC<{
                       placement='top'
                     >
                       <Box
+                        ml={1}
                         display='flex'
                         alignItems='center'
                         className='cursor'
@@ -253,20 +266,20 @@ const LiquidityPositionTableRow: FC<{
           <Box display='flex' justifyContent='space-between' mt={2}>
             <Button
               color='secondary'
-              variant='contained'
+              variant='outlined'
               onClick={position.staked ? unstake : stake}
               className={classes.depositButton}
             >
-              {position.staked ? 'Unstake' : 'Stake'}
+              <small>{position.staked ? 'Unstake' : 'Stake'}</small>
             </Button>
             <Button
               color='secondary'
-              variant='contained'
+              variant='outlined'
               onClick={withdraw}
               className={classes.depositButton}
               disabled={position.owner === address}
             >
-              Withdraw
+              <small>Withdraw</small>
             </Button>
           </Box>
         </Box>
@@ -321,6 +334,10 @@ const LiquidityPositionTableRow: FC<{
 };
 
 const ClaimAvailableReward: FC = () => {
+  const theme = useTheme();
+
+  const isMobile = useMediaQuery(theme.breakpoints.down('sm'));
+
   const classes = useStyles();
   const { stakingRewardsContract } = useContracts();
   const {
@@ -398,7 +415,7 @@ const ClaimAvailableReward: FC = () => {
   };
 
   return (
-    <Box marginLeft='auto'>
+    <Box marginLeft={isMobile ? 0 : 'auto'}>
       <Box className='flex items-center' mb={1}>
         <Box mr={1}>Total Incentive:</Box>{' '}
         <Box>
