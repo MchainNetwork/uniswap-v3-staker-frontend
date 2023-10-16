@@ -64,10 +64,33 @@ const Header: FC = () => {
 
         {address ? (
           <>
+            <Jazzicon diameter={32} seed={jsNumberForAddress(address)} />
+            <div className={classes.account}>{shortAddress}</div>
             &nbsp;
             {/* Menu to choose network and show actual one */}
-            <Button color='primary' onClick={handleClick}>
-              {network || 'Not Connected'}
+            <Button
+              variant='outlined'
+              color='secondary'
+              style={{
+                marginRight: 10,
+                marginLeft: 10,
+              }}
+              onClick={handleClick}
+            >
+              {network == 'goerli' && (
+                <>
+                  <img src='goerli_logo.jpeg' width='20' />
+                  &nbsp; &nbsp;
+                  <small> Goerli Testnet</small>
+                </>
+              )}
+              {network == 'mainnet' && (
+                <>
+                  <img src='eth_logo.png' width='20' />
+                  &nbsp; &nbsp;
+                  <small> Ethereum Mainnet</small>
+                </>
+              )}
             </Button>
             <Menu
               id='simple-menu'
@@ -75,6 +98,8 @@ const Header: FC = () => {
               keepMounted
               open={Boolean(anchorEl)}
               onClose={handleClose}
+              anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+              transformOrigin={{ vertical: 'top', horizontal: 'center' }}
             >
               <MenuItem
                 onClick={() => {
@@ -93,7 +118,8 @@ const Header: FC = () => {
                   handleClose();
                 }}
               >
-                Ethereum Mainnet
+                <img src='eth_logo.png' width='20' />
+                &nbsp; &nbsp; Ethereum Mainnet
               </MenuItem>
               <MenuItem
                 onClick={() => {
@@ -112,20 +138,23 @@ const Header: FC = () => {
                   handleClose();
                 }}
               >
-                Goerli Testnet
+                <img src='goerli_logo.jpeg' width='20' />
+                &nbsp; &nbsp; Goerli Testnet
               </MenuItem>
               {/* Add more MenuItem components for other networks here */}
             </Menu>
             {/* End menu */}
-            <Jazzicon diameter={32} seed={jsNumberForAddress(address)} />
-            <div className={classes.account}>{shortAddress}</div>
-            <Button color='secondary' onClick={disconnect}>
-              Disconnect
+            <Button variant='outlined' color='primary' onClick={disconnect}>
+              <small>Disconnect</small>
             </Button>
             &nbsp;
           </>
         ) : (
-          <Button color='secondary' onClick={startConnecting}>
+          <Button
+            variant='outlined'
+            color='secondary'
+            onClick={startConnecting}
+          >
             Connect Wallet
           </Button>
         )}
